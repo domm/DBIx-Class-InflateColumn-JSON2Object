@@ -1,5 +1,7 @@
 package DBIx::Class::InflateColumn::Role::Storable;
 
+# ABSTRACT: simplified MooseX::Storage clone with enhanced JSON boolean handling
+
 use Moose::Role;
 
 use DBIx::Class::InflateColumn::Trait::NoSerialize;
@@ -16,10 +18,10 @@ coerce 'InflateColumnJSONBool',
     via { $_ ? 1 : 0 };
 coerce 'InflateColumnJSONBool',
     from 'Str',
-    via { warn "STR"; $_ ? JSON->true : JSON->false };
+    via { $_ ? JSON->true : JSON->false };
 coerce 'InflateColumnJSONBool',
     from 'Int',
-    via { warn "INT"; $_ ? JSON->true : JSON->false };
+    via { $_ ? JSON->true : JSON->false };
 
 sub freeze {
     my ($self) = @_;
