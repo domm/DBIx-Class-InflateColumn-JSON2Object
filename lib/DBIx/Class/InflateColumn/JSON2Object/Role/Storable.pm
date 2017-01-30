@@ -1,10 +1,10 @@
-package DBIx::Class::InflateColumn::Role::Storable;
+package DBIx::Class::InflateColumn::JSON2Object::Role::Storable;
 
 # ABSTRACT: simplified MooseX::Storage clone with enhanced JSON boolean handling
 
 use Moose::Role;
 
-use DBIx::Class::InflateColumn::Trait::NoSerialize;
+use DBIx::Class::InflateColumn::JSON2Object::Trait::NoSerialize;
 use JSON::MaybeXS;
 use String::CamelCase qw(camelize decamelize);
 
