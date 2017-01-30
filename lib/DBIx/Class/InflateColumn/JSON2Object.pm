@@ -44,7 +44,7 @@ sub class_in_column {
                         my $package = $namespace->package($self->$class_column);
                         $data = $package->thaw($data);
                     }
-                    return $data->freeze();
+                    return $data->freeze;
                 },
             }
         );
@@ -79,7 +79,7 @@ sub fixed_class {
                     } else {
                         $data = $package->thaw($data);
                     }
-                    return $data->freeze();
+                    return $data->freeze;
                 },
             }
         );
