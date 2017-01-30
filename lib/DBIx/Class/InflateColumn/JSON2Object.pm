@@ -1,81 +1,135 @@
 package DBIx::Class::InflateColumn::JSON2Object;
 
+# ABSTRACT: convert JSON columns to Perl objects
+
+our $VERSION = '0.001';
+
 use strict;
 use warnings;
 use JSON::MaybeXS qw(encode_json decode_json );
 use Encode qw(encode_utf8 decode_utf8);
-use MooseX::Role::Parameterized;
 use Module::Runtime 'use_module';
+use Scalar::Util qw(blessed);
 
-parameter columns => ( is => 'ro', isa => 'ArrayRef', required => 1 );
+sub class_in_column {
+    my ($class,@args) = @_;
+    my $caller = caller(0);
 
-## uff monkey-patch
-#sub JSON::PP::Boolean::pack {
-#    my $val = shift;
-#    return $val ? 1 : 0;
-#}
+    foreach my $def (@args) {
 
-role {
-    my $p        = shift;
-    my %args     = @_;
-    my $consumer = $args{consumer}->name;
+        my $class_column    = $def->{class_column};
+        my $data_column     = $def->{data_column};
+        my $namespace       = $def->{namespace};
+        my $result_source   = $def->{result_source} || $caller;
 
-    foreach my $col ( @{ $p->columns } ) {
-        my ( $column, $class );
-        if ( ref($col) eq 'ARRAY' ) {
-            ( $column, $class ) = @$col;
-        }
-        else {
-            $column = $col;
-        }
+        use_module($namespace);
 
-        if ($class) {
-            use_module($class);
-            $consumer->inflate_column(
-                $column,
-                {   inflate => sub {
-                        my $raw = shift;
-
-                        return $class->thaw($raw);
-                    },
-                    deflate => sub {
-                        my $data = shift;
-                        if ( ref($data) =~ m/^(HASH|ARRAY)$/ ) {
-                            return decode_utf8( encode_json($data) );
+        $result_source->inflate_column(
+            $data_column,
+            {
+                inflate => sub {
+                    my ($data,$self) = @_;
+                    my $package = $namespace->package($self->$class_column);
+                    return $package->thaw($data);
+                },
+                deflate => sub {
+                    my ($data,$self) = @_;
+                    if (blessed $data) {
+                        if ($data->isa($namespace)) {
+                            $self->$class_column($data->moniker);
+                        } else {
+                            die('Supplied args object is not a '.$namespace);
                         }
-                        elsif ( ref($data) eq $class ) {
-                            my $packed = $data->pack;
-                            delete $packed->{'__CLASS__'};
-                            return decode_utf8( encode_json($packed) );
-                        }
-                        return $data;
-                    },
-                }
-            );
-        }
-        else {
-            $consumer->inflate_column(
-                $column,
-                {   inflate => sub {
-                        my $raw = shift;
-                        return {}
-                            if !defined $raw
-                            || $raw =~ m/^\s*$/;
-                        return decode_json( encode_utf8($raw) );
-                    },
-                    deflate => sub {
-                        my $data = shift;
-
-                        if ( ref($data) =~ m/^(HASH|ARRAY)$/ ) {
-                            return decode_utf8( encode_json($data) );
-                        }
-
-                        return $data;
-                    },
-                }
-            );
-        }
+                    } else {
+                        my $package = $namespace->package($self->$class_column);
+                        $data = $package->thaw($data);
+                    }
+                    return $data->freeze();
+                },
+            }
+        );
     }
-};
+}
+
+sub fixed_class {
+    my ($class,@args) = @_;
+    my $caller = caller(0);
+
+    foreach my $def (@args) {
+
+        my $data_column   = $def->{column};
+        my $package       = $def->{class};
+        my $result_source = $def->{result_source} || $caller;
+
+        use_module($package);
+
+        $result_source->inflate_column(
+            $data_column,
+            {
+                inflate => sub {
+                    my ($data,$self) = @_;
+                    return $package->thaw($data);
+            },
+                deflate => sub {
+                    my ($data,$self) = @_;
+                    if (blessed $data) {
+                        if (!$data->isa($package)) {
+                            die('Supplied args object is not a '.$package);
+                        }
+                    } else {
+                        $data = $package->thaw($data);
+                    }
+                    return $data->freeze();
+                },
+            }
+        );
+    }
+}
+
+sub no_class {
+    my ($class,@args) = @_;
+    my $caller = caller(0);
+
+    foreach my $def (@args) {
+
+        my $data_column     = $def->{column};
+        my $result_source   = $def->{result_source} || $caller;
+
+        $result_source->inflate_column(
+            $data_column,
+            {
+                inflate => sub {
+                    my ($data,$self) = @_;
+                    return {}
+                        if !defined $data
+                            || $data =~ m/^\s*$/;
+                    return decode_json( encode_utf8($data) );
+                },
+                deflate => sub {
+                    my ($data,$self) = @_;
+                    if ( ref($data) =~ m/^(HASH|ARRAY)$/ ) {
+                        return decode_utf8( encode_json($data) );
+                    }
+                    return $data;
+                },
+            }
+        );
+    }
+}
 
 1;
+
+__END__
+
+=head1 SYNOPSIS
+
+TODO
+
+=head1 DESCRIPTION
+
+Do not use yet, this is Alpha-Code!
+
+
+
+
+
