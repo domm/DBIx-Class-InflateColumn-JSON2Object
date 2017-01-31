@@ -12,12 +12,6 @@ use Moose::Util::TypeConstraints;
 
 subtype 'InflateColumnJSONBool',
     as 'Ref';
-    #as class_type('JSON::PP::Boolean');
-
-#coerce 'InflateColumnJSONBool',
-#    from 'JSON::PP::Boolean',
-#    via { $_ ? 1 : 0 };
-
 coerce 'InflateColumnJSONBool',
     from 'Str',
     via { $_ ? JSON->true : JSON->false };
