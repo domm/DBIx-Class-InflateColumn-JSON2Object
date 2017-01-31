@@ -41,4 +41,10 @@ use DBIx::Class::InflateColumn::JSON2Object;
 DBIx::Class::InflateColumn::JSON2Object->no_class({
     column=>'no_class',
 });
+
+DBIx::Class::InflateColumn::JSON2Object->fixed_class({
+    column=>'fixed_class',
+    class=>'testlib::Object::Fixed',
+});
+
 1;

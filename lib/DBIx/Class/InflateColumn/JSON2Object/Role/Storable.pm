@@ -11,11 +11,13 @@ use String::CamelCase qw(camelize decamelize);
 use Moose::Util::TypeConstraints;
 
 subtype 'InflateColumnJSONBool',
-  as class_type('JSON::PP::Boolean');
+  as class_type('JSON::PP::Boolean'),
+  as class_type('JSON::XS::Boolean');
 
-coerce 'InflateColumnJSONBool',
-    from 'JSON::PP::Boolean',
-    via { $_ ? 1 : 0 };
+#coerce 'InflateColumnJSONBool',
+#    from 'JSON::PP::Boolean',
+#    via { $_ ? 1 : 0 };
+
 coerce 'InflateColumnJSONBool',
     from 'Str',
     via { $_ ? JSON->true : JSON->false };
