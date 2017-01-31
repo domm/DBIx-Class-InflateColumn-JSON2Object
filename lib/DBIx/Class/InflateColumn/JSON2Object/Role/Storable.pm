@@ -11,8 +11,8 @@ use String::CamelCase qw(camelize decamelize);
 use Moose::Util::TypeConstraints;
 
 subtype 'InflateColumnJSONBool',
-  as class_type('JSON::PP::Boolean'),
-  as class_type('JSON::XS::Boolean');
+    as 'Ref';
+    #as class_type('JSON::PP::Boolean');
 
 #coerce 'InflateColumnJSONBool',
 #    from 'JSON::PP::Boolean',
