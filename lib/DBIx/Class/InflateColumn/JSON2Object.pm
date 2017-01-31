@@ -123,13 +123,118 @@ __END__
 
 =head1 SYNOPSIS
 
-TODO
+  # In a DBIx::Class Result
+  package MyApp::Schema::Result::SomeTable;
+  ... lots of DBIx::Class code...
+
+  use DBIx::Class::InflateColumn::JSON2Object;
+  DBIx::Class::InflateColumn::JSON2Object->fixed_class({
+      column=>'data',      # a column storing JSON
+      class=>'MyApp::SomeClass',
+  });
+
+  # later, in some code far, far away...
+  my $row = $schema->resultset('SomeTable')->find(42);
+  my $obj = $row->data;
+  $obj->foo; # $obj ISA MyApp::SomeClass
+
+  # store a hash as JSON after "validating" it through MyApp::SomeClass
+  $schema->resultset('SomeTable')->create({
+      data => {
+          foo=>'bar',
+      };
+  })
+
+  # you can also use it to just deflate/inflate JSON to a Perl hash
+  DBIx::Class::InflateColumn::JSON2Object->no_class({
+      column=>'args',
+  });
+
+  # or have a complex set of objects
+  DBIx::Class::InflateColumn::JSON2Object->class_in_column({
+      data_column  => 'object',        # some JSON
+      class_column => 'type',          # here we store the name of the object
+      namespace    => 'MyApp::Object', # the namespace of the objects
+  });
 
 =head1 DESCRIPTION
 
-Do not use yet, this is Alpha-Code!
+TODO: short overview
 
+=head2 Booleans, JSON, oh my...
 
+TODO: describe problem and the (hacky/crappy?) solution
 
+=head2 METHODS
 
+Please note that you can pass more than one HASHREF per method to
+install several inflator/deflators at once.
+
+=head3 no_class
+
+Install a JSON inflator/deflator for each column.
+
+  DBIx::Class::InflateColumn::JSON2Object->no_class({
+      column=>'args'
+  });
+
+You can pass a Perl datastructure to the row and it will be stored as JSON:
+
+  $resultset->create( {
+      id   => 123,
+      args => {
+        some => 'data',
+        more => [1,1,2,3,5,8]
+      }
+  });
+  # will be stored as '{"some":"data","more":[1,1,2,3,5,8]}'
+
+You can also access the data directly as a Perl hash:
+
+  my $row = $resultset->find(123);
+  $row->args->{some};     # 'data'
+  $row->args->{more}[5];  # 8
+
+=head3 fixed_class
+
+If plain JSON is to wobbly for you, you can define Moose objects and
+have them serialized to JSON. Not only can you now add some custom
+methods to the objects, but you can (ab)use the object initalisation
+and all features Moose provides to define your objects.
+
+ TODO ->fixed_class(..)
+
+Just pass an object to the row and it will be stored as JSON:
+
+  TODO
+
+And you get back the initated object:
+
+  TODO
+
+=head3 class_in_column
+
+Sometimes you have a set of similar objects you want to store. TODO: explain oe1.article.paragraph
+
+  TODO ->class_in_column(..)
+
+You can pass an object to the row and the infered type will be stored together with the JSON-payload:
+
+  TODO
+
+To get back the object:
+
+  TODO
+
+=head1 THANKS
+
+=over
+
+=item *
+
+Parts of this code were orginally developed for L<validad.com|https://www.validad.com/> and released as Open Source.
+
+=item * L<Maroš Kollár|https://metacpan.org/author/MAROS> wrote the prototype of C<class_in_column>, orginally developed for L<http://oe1.orf.at>.
+
+=back
 
