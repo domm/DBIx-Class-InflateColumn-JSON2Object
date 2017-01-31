@@ -47,4 +47,10 @@ DBIx::Class::InflateColumn::JSON2Object->fixed_class({
     class=>'testlib::Object::Fixed',
 });
 
+DBIx::Class::InflateColumn::JSON2Object->class_in_column({
+    class_column=>'type',
+    data_column=>'data',
+    namespace=>'testlib::Object::Various',
+});
+
 1;

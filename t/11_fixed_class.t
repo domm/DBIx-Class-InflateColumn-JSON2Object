@@ -11,11 +11,6 @@ my $id;
 use JSON::MaybeXS;
 
 subtest 'insert object' => sub {
-
-    my $raw_json = '{"flag2":true}';
-    my $o = testlib::Object::Fixed->new(decode_json($raw_json));
-    use Data::Dumper; $Data::Dumper::Maxdepth=3;$Data::Dumper::Sortkeys=1;warn Data::Dumper::Dumper $o;
-
     my $obj = testlib::Object::Fixed->new({
         text=>'Manner Schnitten',
         amount=>10,
