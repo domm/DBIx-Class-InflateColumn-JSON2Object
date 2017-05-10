@@ -26,7 +26,7 @@ sub freeze {
     my ($self) = @_;
 
     my $payload = $self->pack;
-    my $json = encode_json($payload);
+    my $json = JSON::MaybeXS->new->utf8->convert_blessed->encode($payload);
 
     # stolen from MooseX::Storage
     utf8::decode($json) if !utf8::is_utf8($json) and utf8::valid($json);
