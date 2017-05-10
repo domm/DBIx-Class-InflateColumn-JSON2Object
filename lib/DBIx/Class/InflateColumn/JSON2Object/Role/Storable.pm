@@ -18,6 +18,9 @@ coerce 'InflateColumnJSONBool',
 coerce 'InflateColumnJSONBool',
     from 'Int',
     via { $_ ? JSON->true : JSON->false };
+coerce 'InflateColumnJSONBool',
+    from 'Undef',
+    via { JSON->false };
 
 sub freeze {
     my ($self) = @_;
