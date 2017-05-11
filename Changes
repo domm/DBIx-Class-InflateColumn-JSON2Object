@@ -1,6 +1,10 @@
 Revision history for DBIx-Class-InflateColumn-JSON2Object
 
-0.901   2017-05-10T17:13:17
+0.902   2017-05-11T11:07:21
+    - handle nested Objects (if they have proper types and coercions)
+
+
+0.901   never released
     - coerce JSON boolean from undef (to false)
 
 
