@@ -68,6 +68,11 @@ sub package {
     return $class.'::'.camelize($moniker)
 }
 
+sub TO_JSON {
+    my $self = shift;
+    return $self->pack;
+}
+
 1;
 
 __END__
