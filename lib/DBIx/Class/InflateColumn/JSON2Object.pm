@@ -12,36 +12,39 @@ use Module::Runtime 'use_module';
 use Scalar::Util qw(blessed);
 
 sub class_in_column {
-    my ($class,@args) = @_;
+    my ( $class, @args ) = @_;
     my $caller = caller(0);
 
     foreach my $def (@args) {
 
-        my $class_column    = $def->{class_column};
-        my $data_column     = $def->{data_column};
-        my $namespace       = $def->{namespace};
-        my $result_source   = $def->{result_source} || $caller;
+        my $class_column  = $def->{class_column};
+        my $data_column   = $def->{data_column};
+        my $namespace     = $def->{namespace};
+        my $result_source = $def->{result_source} || $caller;
 
         use_module($namespace);
 
         $result_source->inflate_column(
             $data_column,
-            {
-                inflate => sub {
-                    my ($data,$self) = @_;
-                    my $package = $namespace->package($self->$class_column);
+            {   inflate => sub {
+                    my ( $data, $self ) = @_;
+                    my $package = $namespace->package( $self->$class_column );
                     return $package->thaw($data);
                 },
                 deflate => sub {
-                    my ($data,$self) = @_;
-                    if (blessed $data) {
-                        if ($data->isa($namespace)) {
-                            $self->$class_column($data->moniker);
-                        } else {
-                            die('Supplied args object is not a '.$namespace);
+                    my ( $data, $self ) = @_;
+                    if ( blessed $data) {
+                        if ( $data->isa($namespace) ) {
+                            $self->$class_column( $data->moniker );
                         }
-                    } else {
-                        my $package = $namespace->package($self->$class_column);
+                        else {
+                            die( 'Supplied args object is not a '
+                                    . $namespace );
+                        }
+                    }
+                    else {
+                        my $package =
+                            $namespace->package( $self->$class_column );
                         $data = $package->thaw($data);
                     }
                     return $data->freeze;
@@ -52,7 +55,7 @@ sub class_in_column {
 }
 
 sub fixed_class {
-    my ($class,@args) = @_;
+    my ( $class, @args ) = @_;
     my $caller = caller(0);
 
     foreach my $def (@args) {
@@ -65,18 +68,18 @@ sub fixed_class {
 
         $result_source->inflate_column(
             $data_column,
-            {
-                inflate => sub {
-                    my ($data,$self) = @_;
+            {   inflate => sub {
+                    my ( $data, $self ) = @_;
                     return $package->thaw($data);
-            },
+                },
                 deflate => sub {
-                    my ($data,$self) = @_;
-                    if (blessed $data) {
-                        if (!$data->isa($package)) {
-                            die('Supplied args object is not a '.$package);
+                    my ( $data, $self ) = @_;
+                    if ( blessed $data) {
+                        if ( !$data->isa($package) ) {
+                            die('Supplied args object is not a ' . $package );
                         }
-                    } else {
+                    }
+                    else {
                         $data = $package->thaw($data);
                     }
                     return $data->freeze;
@@ -87,7 +90,7 @@ sub fixed_class {
 }
 
 sub array_of_class {
-    my ($class,@args) = @_;
+    my ( $class, @args ) = @_;
     my $caller = caller(0);
 
     foreach my $def (@args) {
@@ -100,33 +103,36 @@ sub array_of_class {
 
         $result_source->inflate_column(
             $data_column,
-            {
-                inflate => sub {
-                    my ($raw_list,$self) = @_;
+            {   inflate => sub {
+                    my ( $raw_list, $self ) = @_;
                     utf8::encode($raw_list) if utf8::is_utf8($raw_list);
                     my $list = decode_json($raw_list);
-                    die ('Can only work with arrayref') unless ref($list) eq 'ARRAY';
+                    die('Can only work with arrayref')
+                        unless ref($list) eq 'ARRAY';
                     my @objects;
                     foreach my $data (@$list) {
-                        push (@objects, $package->new($data));
+                        push( @objects, $package->new($data) );
                     }
                     return \@objects;
-            },
+                },
                 deflate => sub {
-                    my ($list,$self) = @_;
-                    die ('Supplied args object is not a arrayref') unless ref($list) eq 'ARRAY';
+                    my ( $list, $self ) = @_;
+                    die('Supplied args object is not a arrayref')
+                        unless ref($list) eq 'ARRAY';
                     my @frozen;
                     foreach my $data (@$list) {
-                        if (blessed $data) {
-                            if (!$data->isa($package)) {
-                                die('Supplied args object is not a '.$package);
+                        if ( blessed $data) {
+                            if ( !$data->isa($package) ) {
+                                die( 'Supplied args object is not a '
+                                        . $package );
                             }
-                        } else {
+                        }
+                        else {
                             $data = $package->thaw($data);
                         }
-                        push(@frozen,$data->freeze);
+                        push( @frozen, $data->freeze );
                     }
-                    return '['.(join(',',@frozen)).']';
+                    return '[' . ( join( ',', @frozen ) ) . ']';
                 },
             }
         );
@@ -134,26 +140,25 @@ sub array_of_class {
 }
 
 sub no_class {
-    my ($class,@args) = @_;
+    my ( $class, @args ) = @_;
     my $caller = caller(0);
 
     foreach my $def (@args) {
 
-        my $data_column     = $def->{column};
-        my $result_source   = $def->{result_source} || $caller;
+        my $data_column = $def->{column};
+        my $result_source = $def->{result_source} || $caller;
 
         $result_source->inflate_column(
             $data_column,
-            {
-                inflate => sub {
-                    my ($data,$self) = @_;
+            {   inflate => sub {
+                    my ( $data, $self ) = @_;
                     return {}
                         if !defined $data
-                            || $data =~ m/^\s*$/;
+                        || $data =~ m/^\s*$/;
                     return decode_json( encode_utf8($data) );
                 },
                 deflate => sub {
-                    my ($data,$self) = @_;
+                    my ( $data, $self ) = @_;
                     if ( ref($data) =~ m/^(HASH|ARRAY)$/ ) {
                         return decode_utf8( encode_json($data) );
                     }
