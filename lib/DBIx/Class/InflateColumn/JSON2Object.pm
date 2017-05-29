@@ -2,10 +2,11 @@ package DBIx::Class::InflateColumn::JSON2Object;
 
 # ABSTRACT: convert JSON columns to Perl objects
 
-our $VERSION = '0.903';
+our $VERSION = '0.904';
 
 use strict;
 use warnings;
+use 5.014;
 use JSON::MaybeXS qw(encode_json decode_json );
 use Encode qw(encode_utf8 decode_utf8);
 use Module::Runtime 'use_module';

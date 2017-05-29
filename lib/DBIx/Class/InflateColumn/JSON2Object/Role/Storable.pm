@@ -1,5 +1,5 @@
 package DBIx::Class::InflateColumn::JSON2Object::Role::Storable;
-
+use 5.014;
 # ABSTRACT: simplified MooseX::Storage clone with enhanced JSON boolean handling
 
 use Moose::Role;
