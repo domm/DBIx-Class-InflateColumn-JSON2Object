@@ -1,13 +1,15 @@
 package DBIx::Class::InflateColumn::JSON2Object::Trait::NoSerialize;
-use Moose::Role;
-use 5.014;
 
 # ABSTRACT: NoSerialize trait for attributes
+# VERSION
+
+use Moose::Role;
+use 5.014;
 
 package Moose::Meta::Attribute::Custom::Trait::NoSerialize {
 
     sub register_implementation {
-        'DBIx::Class::InflateColumn::JSON2Object::Trait::NoSerialize'
+        'DBIx::Class::InflateColumn::JSON2Object::Trait::NoSerialize';
     }
 }
 
