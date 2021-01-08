@@ -1,6 +1,8 @@
 Revision history for DBIx-Class-InflateColumn-JSON2Object
 
 {{$NEXT}}
+
+0.906     2021-01-08 22:56:45+01:00
     - dist housekeeping, Dist::Zilla::PluginBundle::Author::DOMM
 
 
