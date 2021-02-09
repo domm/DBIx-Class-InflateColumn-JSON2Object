@@ -55,7 +55,7 @@ sub pack {
         next unless defined $val;
 
         my $type = $attribute->type_constraint;
-        if ($type eq 'Int' || $type eq 'Num') {
+        if ($type && ($type eq 'Int' || $type eq 'Num')) {
             $val = 1 * $val;
         }
         $payload->{ $attribute->name } = $val;
